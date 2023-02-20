@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package chat;
+
+message Empty {}
+
+message AccountInfo {
+    string username = 1;
+    string password = 2;
+}
+
+message Response {
+    bool status = 1;
+    string msg = 2;
+}
+
+message Msg {
+    string src_username = 1;
+    string dst_username = 2;
+    string msg = 3;
+}
+
+service ChatApp {
+    rpc CreateAccount (AccountInfo) returns (Response);
+    rpc LoginAccount (AccountInfo) returns (Response);
+    rpc ListAccounts (Empty) returns (Response);
+    rpc DeleteAccount (AccountInfo) returns (Response);
+    rpc SendMessage (Msg) returns (Empty);
+    rpc MessageStream (AccountInfo) returns (stream Msg);
+}x
