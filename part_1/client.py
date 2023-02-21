@@ -42,7 +42,6 @@ def main():
             if read_object == sys.stdin:
                 message = sys.stdin.readline()
                 client.send(message.encode(encoding=ENCODING))
-                # print('<You> {}'.format(message))
             # Recieved message from server socket
             else:
                 message = read_object.recv(BUFFER_SIZE)
