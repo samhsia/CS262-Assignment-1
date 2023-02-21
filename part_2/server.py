@@ -14,15 +14,13 @@ from protos import chat_pb2_grpc
 # Constants/configurations
 MAX_CLIENTS = 100
 PORT        = 1234 # fixed application port
-
-SERVER_IP = '100.90.130.16' # REPLACE ME with output of ipconfig getifaddr en0
+SERVER_IP   = '100.90.130.16' # REPLACE ME with output of ipconfig getifaddr en0
 
 class ChatAppService(chat_pb2_grpc.ChatAppServicer):
-
     '''
     'users' is a hashmap to store all client data
         - key: username
-        - values: 'password', 'socket', 'mailbox'
+        - values: 'password', 'mailbox'
     '''
     def __init__(self) -> None:
         super().__init__()
@@ -35,57 +33,57 @@ class ChatAppService(chat_pb2_grpc.ChatAppServicer):
             success = True
             self.users[request.username]['password'] = request.password
             print('Successfully created account with username: {}'.format(request.username))
-            message = 'Successfully created account with username: {}\n'.format(request.username)
+            message = '\nSuccessfully created account with username: {}\n'.format(request.username)
             self.users[request.username]['mailbox'] = []
         # Username has already been taken (re-enter)
         else:
             success = False
-            message = '{} is already taken. Please enter a unique username!\n'.format(request.username)
+            message = '\n{} is already taken. Please enter a unique username!\n'.format(request.username)
         response = chat_pb2.Response(status=success, msg=message)
         return response
     
+    # Handles login for existing user
     def LoginAccount(self, request, context):
         success = False
         # Username exists
         if request.username in self.users:
-            print(self.users)
-            print('HERE')
             # Entered correct password
             if request.password == self.users[request.username]['password']:
                 success = True
                 print('{} successfully logged in'.format(request.username))
-                message = 'Successfully logged in\n'
+                message = '\nSuccessfully logged in'
 
                 # No mail to send
                 if len(self.users[request.username]['mailbox']) == 0:
-                    message += 'You do not have any queued messages.' # no mail to send
+                    message += '\nYou do not have any queued messages.' # no mail to send
                 # Send mail and clear mailbox
                 else:
-                    message += 'Welcome back, {}. Unread messages:\n'.format(request.username)
+                    message += '\nWelcome back, {}. Unread messages:\n'.format(request.username)
                     for mailbox_message in self.users[request.username]['mailbox']:
                         message += str(mailbox_message+'\n')
                     self.users[request.username]['mailbox'] = []
             # Entered incorrect password
             else:
-                message = 'Incorrect password. Returning to the welcome page.'
+                message = '\nIncorrect password. Returning to the welcome page.'
         
         # Username does not exist
         else:
-            message = '{} is not a valid username. Returning to the welcome page.'.format(request.username)
+            message = '\n{} is not a valid username. Returning to the welcome page.'.format(request.username)
 
         response = chat_pb2.Response(status=success, msg=message)
         return response
     
+    # List all user accounts
     def ListAccounts(self, request, context):
-        message = ''
+        message = '\nAll users:\n'
         for index, username in enumerate(self.users):
             message += '{}. {}\n'.format(index, username)
         response = chat_pb2.Response(status=True, msg = message)
         return response
     
+    # Delete client user account
     def DeleteAccount(self, request, context):
         del self.users[request.username]
-        # users.pop(request.username)
         print('{} deleted account.'. format(request.username))
         response = chat_pb2.Response(status=True, msg='')
         return response
@@ -98,7 +96,7 @@ class ChatAppService(chat_pb2_grpc.ChatAppServicer):
         for index, username in enumerate(self.users):
             message = '{}. {}'.format(index, username)
             yield chat_pb2.Msg(src_username = '', dst_username = request.username, msg = message)
-        
+
         # Continuously listen to new messages
         while True:
             try:
